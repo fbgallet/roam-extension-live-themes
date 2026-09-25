@@ -1,0 +1,19 @@
+{
+  "name": "live-themes",
+  "version": "1.0.0",
+  "description": "Design and tweak your Roam theme with AI, in plain words, no CSS knowledge needed. Instant preview, automatic revert if you don't keep it. Requires Live AI.",
+  "main": "index.js",
+  "scripts": {
+    "build": "roamjs-scripts build --depot",
+    "dev": "roamjs-scripts dev --depot"
+  },
+  "keywords": ["roam-research", "roam-depot", "css", "theme", "theming", "ai", "llm", "live-ai"],
+  "author": "Fabrice Gallet",
+  "license": "MIT",
+  "dependencies": {
+    "@blueprintjs/core": "^3.54.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "roamjs-scripts": "^0.27.1"
+  }
+}
