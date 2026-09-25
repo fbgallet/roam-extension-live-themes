@@ -2,6 +2,8 @@
 
 Change the look of your Roam graph **by simply describing what you want**: "wider pages", "a calm dark mode", "make tags look like colored pills"… No CSS knowledge needed. Live Themes asks an AI model to do it, shows you the result immediately, and **undoes it automatically unless you confirm it**, so a bad result can never leave your graph unusable.
 
+<img width="768" height="751" alt="image" src="https://github.com/user-attachments/assets/33f8e032-8ca5-401f-bec5-d0a72dd05672" />
+
 ## Setup (2 minutes)
 
 Live Themes uses the AI models of the **[Live AI](https://github.com/fbgallet/roam-extension-live-ai-assistant)** extension, so it needs no API key of its own.
@@ -9,6 +11,10 @@ Live Themes uses the AI models of the **[Live AI](https://github.com/fbgallet/ro
 1. Install **Live AI** from Roam Depot and set up at least one AI provider (API key) in its settings, if you have not already.
 2. In **Live AI**'s settings, turn on **"Public API (window.LiveAI_API)"** (last option).
 3. Install **Live Themes** from Roam Depot. A drop icon 💧 appears in the top bar, next to the search box.
+
+Example of dark Aurora:
+
+<img width="1109" height="825" alt="image" src="https://github.com/user-attachments/assets/471b8da9-0567-4661-bde1-eb5735f0eb3b" />
 
 ## Your first theme
 
