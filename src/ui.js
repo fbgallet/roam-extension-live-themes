@@ -6,6 +6,7 @@ import { Button } from "@blueprintjs/core";
 import Tooltip from "./components/LtTooltip";
 import LiveThemesDialog, { queueRequest } from "./components/LiveThemesDialog";
 import ReviewBanner from "./components/ReviewBanner";
+import { unmountAISourceDialog } from "./components/AISourceDialog";
 import { subscribeReview } from "./review";
 import { clearToasts } from "./utils/notify";
 import { buildContrastFixRequest } from "./ai/contrast";
@@ -200,6 +201,7 @@ export const unmountAllUI = () => {
       el.remove();
     }
   });
+  unmountAISourceDialog();
   removeTopbarButton();
   removeDarkModeButton();
   clearToasts();

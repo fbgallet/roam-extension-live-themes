@@ -51,6 +51,8 @@ import { getLiveThemesCss, setLiveThemesFences, writeLiveThemesCss } from "./uti
 import { removeAllStyles, syncFontLinks } from "./utils/cssPreview";
 import { disableLiveThemesCss, enableLiveThemesCss } from "./cssToggle";
 import { resetConversation } from "./components/LiveThemesDialog";
+import { openAISourceDialog } from "./components/AISourceDialog";
+import { notifyAIConfigChanged, SOURCE_ITEMS } from "./ai/directApi";
 // import { exportDomSnapshot } from "./ai/domInspector"; // development commands
 
 const COMMANDS = [];
@@ -139,9 +141,25 @@ async function undoLastChange() {
 
 // ---- Settings panel --------------------------------------------------------
 
+// Roam saves the panel value around the onChange call: refresh the dialog after.
+const onAIConfigChange = () => setTimeout(notifyAIConfigChanged, 50);
+
 const getPanelConfig = () => ({
   tabTitle: "Live Themes",
   settings: [
+    {
+      id: KEYS.aiSource,
+      name: "AI source",
+      description:
+        "Where the requests are sent. Live AI (recommended) uses the models, keys and settings of the Live AI extension (its \"Public API\" setting must be on). Otherwise, a basic direct connection to OpenAI (or any OpenAI-compatible endpoint, even local) or to OpenRouter, with your own key (fields at the bottom of this panel).",
+      action: { type: "select", items: SOURCE_ITEMS, onChange: onAIConfigChange },
+    },
+    {
+      id: "aiSourceDialog",
+      name: "Configure the AI source",
+      description: "Choose the source, endpoint, API key and model ids in a small dialog.",
+      action: { type: "button", content: "AI source…", onClick: () => openAISourceDialog() },
+    },
     {
       id: KEYS.topbarButton,
       name: "Button in the top bar",
@@ -195,7 +213,7 @@ const getPanelConfig = () => ({
       id: KEYS.thinking,
       name: "Thinking (reasoning) mode",
       description:
-        "Ask the model to think before writing the CSS: better handling of specificity, dark mode and contrast, but slower and more tokens. The depth follows Live AI's \"Reasoning effort\" setting. Models without a thinking mode ignore it; thinking-only models always think.",
+        "Ask the model to think before writing the CSS: better handling of specificity, dark mode and contrast, but slower and more tokens. The depth follows Live AI's \"Reasoning effort\" setting (medium effort with a direct OpenAI / OpenRouter source). Models without a thinking mode ignore it; thinking-only models always think.",
       action: { type: "switch" },
     },
     {
@@ -218,6 +236,37 @@ const getPanelConfig = () => ({
       description:
         "⚠️ When on, the model may also rewrite other CSS blocks of the page if you explicitly ask for it. Otherwise only the code block under the 'Live Themes' block is ever modified.",
       action: { type: "switch" },
+    },
+    {
+      id: KEYS.openaiBaseUrl,
+      name: "OpenAI-compatible endpoint URL (optional)",
+      description:
+        "Only for the \"OpenAI (or compatible)\" source. Leave empty to use OpenAI; otherwise the base URL of an OpenAI-compatible API, e.g. http://localhost:11434/v1 (a local server must allow requests from roamresearch.com).",
+      action: { type: "input", placeholder: "https://api.openai.com/v1", onChange: onAIConfigChange },
+    },
+    {
+      id: KEYS.openaiApiKey,
+      name: "OpenAI API key",
+      description: "For the \"OpenAI (or compatible)\" source (optional for a local endpoint). Not needed with Live AI.",
+      action: { type: "input", placeholder: "sk-...", onChange: onAIConfigChange },
+    },
+    {
+      id: KEYS.openaiModels,
+      name: "OpenAI model ids",
+      description: "Comma separated. The first one is used by default; the others can be picked in the dialog (⚙ menu).",
+      action: { type: "input", placeholder: "gpt-6-luna", onChange: onAIConfigChange },
+    },
+    {
+      id: KEYS.openrouterApiKey,
+      name: "OpenRouter API key",
+      description: "For the \"OpenRouter\" source. Not needed with Live AI.",
+      action: { type: "input", placeholder: "sk-or-...", onChange: onAIConfigChange },
+    },
+    {
+      id: KEYS.openrouterModels,
+      name: "OpenRouter model ids",
+      description: "Comma separated, as listed on openrouter.ai/models. The first one is used by default.",
+      action: { type: "input", placeholder: "openai/gpt-6-luna", onChange: onAIConfigChange },
     },
     {
       id: KEYS.cssDisabled,
@@ -321,6 +370,7 @@ export default {
     //   showToast("Live Themes: proposal reverted.", Intent.SUCCESS);
     // });
     addCommand(extensionAPI, "Live Themes: Undo last change", undoLastChange);
+    addCommand(extensionAPI, "Live Themes: AI source and model…", openAISourceDialog);
     // Emergency switch, reachable even when a broken theme hides the settings.
     addCommand(extensionAPI, "Live Themes: Disable / re-enable Live Themes CSS (emergency)", async () => {
       if (getSetting(KEYS.cssDisabled, false)) {

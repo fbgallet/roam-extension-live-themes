@@ -1,4 +1,5 @@
-// Calls the Live AI public API (window.LiveAI_API) and parses the answer.
+// Calls the Live AI public API (window.LiveAI_API), or the direct
+// OpenAI / OpenRouter fallback (directApi.js), and parses the answer.
 
 import { buildSystemPrompt, buildUserPrompt } from "./prompts";
 import { getContextCssBlocks, getLiveThemesCss, getOtherCssBlocks } from "../utils/roamCss";
@@ -10,6 +11,7 @@ import { findUntrustedUrls, untrustedUrlWarning, validateCss } from "../utils/cs
 import { normalizeSelector, scanCssRules } from "../utils/cssRules";
 import { isKnownRoamClass } from "./roamClasses";
 import { ROAM_ELEMENTS } from "./roamElements";
+import { directGenerate, getDirectStatus, getSource } from "./directApi";
 
 export const CALLER_ID = "live-themes/1.0";
 const MAX_CONVERSATION_MESSAGES = 6;
@@ -47,6 +49,9 @@ export const getLiveAIStatus = () => {
   }
   return { ok: true, reason: "ok", title: "", message: "" };
 };
+
+/** Status of the selected AI source (Live AI or direct OpenAI / OpenRouter). */
+export const getAIStatus = () => (getSource() === "liveai" ? getLiveAIStatus() : getDirectStatus());
 
 export const listModels = () => {
   const api = getLiveAI();
@@ -220,8 +225,9 @@ export async function generateTheme({
   onChunk,
   signal,
 }) {
-  const api = getLiveAI();
-  if (!api) throw new Error("Live AI public API is not available.");
+  const source = getSource();
+  const api = source === "liveai" ? getLiveAI() : null;
+  if (source === "liveai" && !api) throw new Error("Live AI public API is not available.");
 
   const includePageContext = getSetting(
     KEYS.includePageContext,
@@ -258,21 +264,24 @@ export async function generateTheme({
     ? [...history, { role: "user", content: userPrompt }]
     : userPrompt;
 
-  const result = await api.generate({
-    prompt,
-    model: resolveModel(),
-    // Explicit on/off: left undefined, Live AI would apply each provider's own
-    // default (on for recent Claude models, off for most others).
-    thinking: !!getSetting(KEYS.thinking, DEFAULTS[KEYS.thinking]),
-    systemPrompt,
-    useDefaultSystemPrompt: false,
-    responseFormat: "text",
-    output: "raw",
-    onChunk,
-    streamTo: "none",
-    signal,
-    caller: CALLER_ID,
-  });
+  const thinking = !!getSetting(KEYS.thinking, DEFAULTS[KEYS.thinking]);
+  const result = api
+    ? await api.generate({
+        prompt,
+        model: resolveModel(),
+        // Explicit on/off: left undefined, Live AI would apply each provider's own
+        // default (on for recent Claude models, off for most others).
+        thinking,
+        systemPrompt,
+        useDefaultSystemPrompt: false,
+        responseFormat: "text",
+        output: "raw",
+        onChunk,
+        streamTo: "none",
+        signal,
+        caller: CALLER_ID,
+      })
+    : await directGenerate({ prompt, systemPrompt, thinking, onChunk, signal });
 
   const text = typeof result?.text === "string" ? result.text : JSON.stringify(result?.text ?? "");
   const parsed = parseProposal(text);

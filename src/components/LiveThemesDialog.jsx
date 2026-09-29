@@ -12,10 +12,12 @@ import { analyzePickedElement, isScreenPicking, startScreenPick } from "../utils
 import { ROAM_ELEMENTS } from "../ai/roamElements";
 import {
   generateTheme,
-  getLiveAIStatus,
+  getAIStatus,
   getDefaultModelId,
   listModels,
 } from "../ai/generate";
+import { getDirectConfig, getSource, resolveDirectModel, subscribeAIConfig } from "../ai/directApi";
+import { openAISourceDialog } from "./AISourceDialog";
 import {
   darkModeTooltip,
   getDarkModeState,
@@ -107,9 +109,12 @@ export const queueRequest = (text, { autoGenerate = false, refine = true } = {})
 };
 
 const LiveThemesDialog = ({ isOpen, onClose, onReopen }) => {
-  const [status, setStatus] = useState(getLiveAIStatus());
+  const [status, setStatus] = useState(getAIStatus());
+  const [source, setSource] = useState(getSource());
   const [models, setModels] = useState([]);
   const [model, setModel] = useState(getSetting(KEYS.model, DEFAULTS[KEYS.model]));
+  const [direct, setDirect] = useState(getDirectConfig());
+  const [directModel, setDirectModel] = useState(resolveDirectModel());
   const [{ dark, hasRules: hasDarkRules }, setDarkState] = useState(getDarkModeState());
   const [followSystem, setFollowSystemState] = useState(isFollowingSystem());
   const [request, setRequest] = useState(savedRequest);
@@ -158,6 +163,16 @@ const LiveThemesDialog = ({ isOpen, onClose, onReopen }) => {
   const streamRef = useRef(null);
   const targetsRef = useRef(null);
 
+  // Status and models of the selected AI source (Live AI or direct).
+  const refreshAISource = () => {
+    setStatus(getAIStatus());
+    setSource(getSource());
+    setModels(listModels());
+    setDirect(getDirectConfig());
+    setDirectModel(resolveDirectModel());
+  };
+  useEffect(() => subscribeAIConfig(refreshAISource), []);
+
   const refreshThemes = () => {
     setThemes(getThemes());
     setActiveTheme(getActiveTheme());
@@ -166,8 +181,7 @@ const LiveThemesDialog = ({ isOpen, onClose, onReopen }) => {
 
   useEffect(() => {
     if (!isOpen) return;
-    setStatus(getLiveAIStatus());
-    setModels(listModels());
+    refreshAISource();
     refreshDarkRules();
     setDarkState(getDarkModeState());
     setFollowSystemState(isFollowingSystem());
@@ -322,6 +336,11 @@ const LiveThemesDialog = ({ isOpen, onClose, onReopen }) => {
     const value = e.target.value;
     setModel(value);
     await setSetting(KEYS.model, value);
+  };
+  const onDirectModelChange = async (e) => {
+    const value = e.target.value;
+    setDirectModel(value);
+    await setSetting(KEYS.directModel, value);
   };
 
   useEffect(() => subscribeDarkMode(setDarkState), []);
@@ -537,15 +556,33 @@ const LiveThemesDialog = ({ isOpen, onClose, onReopen }) => {
     <div className="lt-settings">
       <label className="lt-field">
         <span className="lt-label">Model</span>
-        <HTMLSelect value={model} onChange={onModelChange} disabled={!status.ok}>
-          <option value="default">Live AI default ({defaultModelName})</option>
-          {models.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.name} · {m.provider}
-            </option>
-          ))}
-        </HTMLSelect>
+        {source === "liveai" ? (
+          <HTMLSelect value={model} onChange={onModelChange} disabled={!status.ok}>
+            <option value="default">Live AI default ({defaultModelName})</option>
+            {models.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name} · {m.provider}
+              </option>
+            ))}
+          </HTMLSelect>
+        ) : (
+          <HTMLSelect value={directModel || ""} onChange={onDirectModelChange} disabled={!direct.models.length}>
+            {direct.models.map((id) => (
+              <option key={id} value={id}>
+                {id} · {direct.label}
+              </option>
+            ))}
+          </HTMLSelect>
+        )}
       </label>
+      <div className="lt-field">
+        <span className="lt-hint">
+          Source: {source === "liveai" ? "Live AI" : direct.label}
+        </span>
+        <Button small minimal icon="settings" onClick={openAISourceDialog}>
+          Change AI source…
+        </Button>
+      </div>
       <Switch
         checked={snapshotOn}
         onChange={onSnapshotChange}
@@ -591,7 +628,7 @@ const LiveThemesDialog = ({ isOpen, onClose, onReopen }) => {
               <Button small minimal icon={dark ? "flash" : "moon"} onClick={toggleDark} disabled={generating} />
             </Tooltip>
             <Popover position={Position.BOTTOM_RIGHT} content={settingsPanel}>
-              <Tooltip content="Settings: model, page snapshot, light/dark">
+              <Tooltip content="Settings: AI source and model, page snapshot, light/dark">
                 <Button small minimal icon="cog" />
               </Tooltip>
             </Popover>
@@ -606,15 +643,14 @@ const LiveThemesDialog = ({ isOpen, onClose, onReopen }) => {
         {!status.ok ? (
           <Callout intent={Intent.WARNING} icon="warning-sign" title={status.title}>
             <p>{status.message}</p>
-            <Button
-              small
-              icon="refresh"
-              onClick={() => {
-                setStatus(getLiveAIStatus());
-                setModels(listModels());
-              }}
-            >
+            {source === "liveai" ? (
+              <p>Alternatively, use your own OpenAI (or compatible, even local) or OpenRouter API key.</p>
+            ) : null}
+            <Button small icon="refresh" onClick={refreshAISource} style={{ marginRight: 6 }}>
               Check again
+            </Button>
+            <Button small icon="settings" onClick={openAISourceDialog}>
+              {source === "liveai" ? "Use another AI source…" : "Configure AI source…"}
             </Button>
           </Callout>
         ) : null}

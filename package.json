@@ -1,7 +1,7 @@
 {
   "name": "live-themes",
   "version": "1.0.0",
-  "description": "Design and tweak your Roam theme with AI, in plain words, no CSS knowledge needed. Instant preview, automatic revert if you don't keep it. Requires Live AI.",
+  "description": "Design and tweak your Roam theme with AI, in plain words, no CSS knowledge needed. Instant preview, automatic revert if you don't keep it. Works with Live AI, or directly with an OpenAI (or compatible) / OpenRouter key.",
   "main": "index.js",
   "scripts": {
     "build": "roamjs-scripts build --depot",

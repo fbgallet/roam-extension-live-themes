@@ -1010,3 +1010,29 @@ html.lt-picking * {
   padding: 0 2px;
   white-space: normal;
 }
+
+/* AI source dialog (Live AI or direct OpenAI / OpenRouter) */
+.lt-source-dialog {
+  width: min(520px, 96vw);
+}
+.lt-source-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lt-source-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lt-source-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lt-source-body p.lt-hint {
+  margin: 0;
+}
+.lt-source-tip {
+  line-height: 1.45;
+}

@@ -6,11 +6,22 @@ Change the look of your Roam graph **by simply describing what you want**: "wide
 
 ## Setup (2 minutes)
 
-Live Themes uses the AI models of the **[Live AI](https://github.com/fbgallet/roam-extension-live-ai-assistant)** extension, so it needs no API key of its own.
+Live Themes uses the AI models of the **[Live AI](https://github.com/fbgallet/roam-extension-live-ai-assistant)** extension (recommended), so it needs no API key of its own.
 
 1. Install **Live AI** from Roam Depot and set up at least one AI provider (API key) in its settings, if you have not already.
 2. In **Live AI**'s settings, turn on **"Public API (window.LiveAI_API)"** (last option).
 3. Install **Live Themes** from Roam Depot. A drop icon 💧 appears in the top bar, next to the search box.
+
+### Without Live AI
+
+As a basic alternative, Live Themes can call a model directly with your own key. In Live Themes settings (or the **AI source…** button, also in the ⚙ menu of the dialog and the command `Live Themes: AI source and model…`), choose the **AI source**:
+
+- **OpenAI (or compatible)**: an OpenAI API key, or the URL of any OpenAI-compatible endpoint, even local (e.g. `http://localhost:11434/v1` for Ollama, which must allow requests from `https://roamresearch.com`). Leave the URL empty to use OpenAI (the API key is then required); with a custom endpoint, the key is optional.
+- **OpenRouter**: an OpenRouter API key.
+
+Then list the model ids you want to use (default: `gpt-6-luna`, or `openai/gpt-6-luna` on OpenRouter); the first one is used unless you pick another in the ⚙ menu of the dialog. The key is stored in your graph's extension settings.
+
+This mode is intentionally minimal: with Live AI, you configure your keys only once for all its features, and get many more models and providers, reasoning effort settings and token usage tracking.
 
 Example of dark Aurora:
 

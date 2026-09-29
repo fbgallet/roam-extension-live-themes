@@ -26,6 +26,13 @@ export const KEYS = {
   excludedContextBlocks: "excludedContextBlocks", // uids of base css blocks NOT sent as context
   topbarButton: "topbarButton",
   model: "model", // "default" or a Live AI model id
+  aiSource: "aiSource", // "Live AI" | "OpenAI (or compatible)" | "OpenRouter" (see ai/directApi.js SOURCES)
+  openaiBaseUrl: "openaiBaseUrl", // empty = OpenAI; else an OpenAI-compatible base URL (e.g. local server)
+  openaiApiKey: "openaiApiKey",
+  openaiModels: "openaiModels", // model ids, one per line or comma separated
+  openrouterApiKey: "openrouterApiKey",
+  openrouterModels: "openrouterModels",
+  directModel: "directModel", // selected model id when the source is not Live AI
   thinking: "thinking", // ask Live AI for extended thinking (effort = Live AI's "Reasoning effort" setting)
   darkMode: "darkMode",
   darkModeFollowSystem: "darkModeFollowSystem", // follow the OS light/dark preference
@@ -50,6 +57,13 @@ export const DEFAULTS = {
   [KEYS.excludedContextBlocks]: [],
   [KEYS.topbarButton]: true,
   [KEYS.model]: "default",
+  [KEYS.aiSource]: "Live AI",
+  [KEYS.openaiBaseUrl]: "",
+  [KEYS.openaiApiKey]: "",
+  [KEYS.openaiModels]: "gpt-6-luna",
+  [KEYS.openrouterApiKey]: "",
+  [KEYS.openrouterModels]: "openai/gpt-6-luna",
+  [KEYS.directModel]: "",
   [KEYS.thinking]: true,
   [KEYS.darkMode]: false,
   [KEYS.darkModeFollowSystem]: false,
